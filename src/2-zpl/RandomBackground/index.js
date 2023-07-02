@@ -11,6 +11,7 @@ module.exports = (Plugin, Library) => {
         constructor() {
             super();
             this.image_urls = [];
+            this.image_queue = [];
             this.defaultSettings = {
                 alpha: 0.625,
                 image_urls_pool: [],
@@ -64,7 +65,7 @@ module.exports = (Plugin, Library) => {
          */
         GetRandomImageURL(prevent_cache = false) {
             if (this.image_urls.length == 0)
-                return;
+                return '';
             if (this.settings.image_urls_pool.length == 0) {
                 this.settings.image_urls_pool = structuredClone(this.image_urls);
             }
@@ -92,6 +93,8 @@ module.exports = (Plugin, Library) => {
          * Apply a random background image.
          */
         ApplyRandomBackgroundImage() {
+            if (this.image_urls.length <= 0)
+                return;
             while (this.image_queue.length < 2) {
                 this.image_queue.push(this.GetRandomImageURL());
             }
@@ -221,10 +224,13 @@ module.exports = (Plugin, Library) => {
             }, {
                 placeholder: this.defaultSettings.fading_seconds
             });
+            let image_urls_textarea_rows = (this.settings.image_urls_string.match(/\n/g) || []).length + 1;
+            if (image_urls_textarea_rows <= 1)
+                image_urls_textarea_rows = 5;
             const image_urls_textarea = this.BuildElementWithHandler('textarea', {
                 value: this.settings.image_urls_string,
                 spellcheck: false,
-                rows: (this.settings.image_urls_string.match(/\n/g) || []).length + 1,
+                rows: image_urls_textarea_rows,
                 cols: 80,
                 placeholder: '# Flowers\nhttps://xxx/a.jpg\n\n// Cute cats!\nhttps://yyy/b.png'
             }, target => {

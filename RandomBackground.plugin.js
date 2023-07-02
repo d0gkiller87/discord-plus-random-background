@@ -1,7 +1,7 @@
 /**
  * @name RandomBackground
  * @description Shows random background from configured pool of image links
- * @version 0.0.3
+ * @version 0.0.4
  * @author d0gkiller87
  * @authorId 419897103888810008
  * @website https://github.com/d0gkiller87/discord-plus-random-background
@@ -37,14 +37,21 @@ const config = {
     author: "d0gkiller87",
     authorId: "419897103888810008",
     authorLink: "",
-    version: "0.0.3",
+    version: "0.0.4",
     description: "Shows random background from configured pool of image links",
     website: "https://github.com/d0gkiller87/discord-plus-random-background",
     source: "https://raw.githubusercontent.com/d0gkiller87/discord-plus-random-background/master/RandomBackground.plugin.js",
     patreon: "",
     donate: "",
     invite: "",
-    changelog: [],
+    changelog: [
+        {
+            title: "v0.0.4",
+            items: [
+                "Fix images not loading until plugin restarts for new users"
+            ]
+        }
+    ],
     defaultConfig: []
 };
 class Dummy {
@@ -81,6 +88,7 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
         constructor() {
             super();
             this.image_urls = [];
+            this.image_queue = [];
             this.defaultSettings = {
                 alpha: 0.625,
                 image_urls_pool: [],
@@ -134,7 +142,7 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
          */
         GetRandomImageURL(prevent_cache = false) {
             if (this.image_urls.length == 0)
-                return;
+                return '';
             if (this.settings.image_urls_pool.length == 0) {
                 this.settings.image_urls_pool = structuredClone(this.image_urls);
             }
@@ -162,6 +170,8 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
          * Apply a random background image.
          */
         ApplyRandomBackgroundImage() {
+            if (this.image_urls.length <= 0)
+                return;
             while (this.image_queue.length < 2) {
                 this.image_queue.push(this.GetRandomImageURL());
             }
@@ -291,10 +301,13 @@ module.exports = !global.ZeresPluginLibrary ? Dummy : (([Plugin, Api]) => {
             }, {
                 placeholder: this.defaultSettings.fading_seconds
             });
+            let image_urls_textarea_rows = (this.settings.image_urls_string.match(/\n/g) || []).length + 1;
+            if (image_urls_textarea_rows <= 1)
+                image_urls_textarea_rows = 5;
             const image_urls_textarea = this.BuildElementWithHandler('textarea', {
                 value: this.settings.image_urls_string,
                 spellcheck: false,
-                rows: (this.settings.image_urls_string.match(/\n/g) || []).length + 1,
+                rows: image_urls_textarea_rows,
                 cols: 80,
                 placeholder: '# Flowers\nhttps://xxx/a.jpg\n\n// Cute cats!\nhttps://yyy/b.png'
             }, target => {
