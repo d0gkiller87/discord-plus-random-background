@@ -1,0 +1,17 @@
+{
+  "main": "index.js",
+  "id": "",
+  "name": "RandomBackground",
+  "author": "d0gkiller87",
+  "authorId": "419897103888810008",
+  "authorLink": "",
+  "version": "0.0.3",
+  "description": "Shows random background from configured pool of image links",
+  "website": "https://github.com/d0gkiller87/discord-plus-random-background",
+  "source": "https://raw.githubusercontent.com/d0gkiller87/discord-plus-random-background/master/RandomBackground.plugin.js",
+  "patreon": "",
+  "donate": "",
+  "invite": "",
+  "changelog": [],
+  "defaultConfig": []
+}
