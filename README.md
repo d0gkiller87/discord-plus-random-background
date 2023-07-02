@@ -3,8 +3,12 @@
 - Put links of your favorite images in RandomBackground's settings
 
 ## Description
-Shows random background from configured pool of image links.
+Random background feature for the BetterDiscord theme [Discord+](https://github.com/PlusInsta/discord-plus) developed by Insta
+### Main
 ![](/screenshots/main.png)
+https://github.com/d0gkiller87/discord-plus-random-background/assets/32069685/f614a759-8e87-49e1-afd2-4835de7ef3fe
+
+### Settings
 ![](screenshots/settings_panel.png)
 
 ## Todo
