@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  image_proxy:
+    build: .
+    container_name: image_proxy
+    restart: unless-stopped
+    volumes:
+      - ./main.py:/app/app/main.py
+    networks:
+      - caddy
+    env_file:
+      - config.env
+networks:
+  caddy:
+    external: true

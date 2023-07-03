@@ -5,7 +5,7 @@
   "author": "d0gkiller87",
   "authorId": "419897103888810008",
   "authorLink": "",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Shows random background from configured pool of image links",
   "website": "https://github.com/d0gkiller87/discord-plus-random-background",
   "source": "https://raw.githubusercontent.com/d0gkiller87/discord-plus-random-background/master/RandomBackground.plugin.js",
@@ -14,9 +14,17 @@
   "invite": "",
   "changelog": [
     {
+      "title": "v0.0.5",
+      "items": [
+        "Add an image proxy server to prevent zooming animation",
+        "Add image transition options (direct, fade, and its variety)",
+        "Fix various bugs"
+      ]
+    },
+    {
       "title": "v0.0.4",
       "items": [
-      "Fix images not loading until plugin restarts for new users"
+        "Fix images not loading until plugin restarts for new users"
       ]
     }
   ],

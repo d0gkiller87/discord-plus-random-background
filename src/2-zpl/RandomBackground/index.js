@@ -19,43 +19,10 @@ module.exports = (Plugin, Library) => {
                 last_image_url: '',
                 interval: 0,
                 interval_id: null,
-                fading_seconds: 3
+                fading_seconds: 3,
+                use_image_proxy: false,
+                transition_type: { label: 'Instant switch', value: '' }
             };
-        }
-        /**
-         * Preloads the next image in a 1x1 <img>.
-         */
-        PreloadImage() {
-            this.preload_img.src = this.image_queue[0];
-        }
-        /**
-         * Updates the background image.
-         *
-         * @param {boolean} should_change_image - Whether or not to change the background image or just the opacity.
-         */
-        ApplyBackgroundImage(should_change_image = true) {
-            let image_url;
-            if (should_change_image) {
-                // change image
-                image_url = this.image_queue.shift();
-                Logger.info(`Setting background image to ${image_url}`);
-                this.settings.last_image_url = image_url;
-                this.SaveSettings();
-            }
-            else {
-                // change opacity
-                image_url = this.settings.last_image_url;
-                Logger.info(`Setting background opacity to ${this.settings.alpha}`);
-            }
-            this.global_css.textContent = `.theme-dark {
-        --dplus-background-color-alpha: ${this.settings.alpha} !important;
-      }
-
-      div#app-mount {
-        transition: background-image ${this.settings.fading_seconds}s ease-in-out;
-        background-image: url(${image_url}) !important;
-        transform: translateZ(0);
-      }`;
         }
         /**
          * Retrieves a random image URL from the list of available image URLs.
@@ -89,16 +56,57 @@ module.exports = (Plugin, Library) => {
             }
             return image_url;
         }
+        GetResizeImageURL(image_url) {
+            return `https://image-proxy-discord-plus.fly.dev/?size=${window.innerWidth}x${window.innerHeight}&url=${encodeURIComponent(image_url)}`;
+        }
+        /**
+         * Preloads the next image in a 1x1 <img>.
+         */
+        PreloadImage() {
+            this.preload_img.src = this.image_queue[0];
+        }
+        /**
+         * Updates the background image.
+         *
+         * @param {boolean} should_change_image - Whether or not to change the background image or just the opacity.
+         */
+        ApplyBackgroundImage(should_change_image = true) {
+            let image_url;
+            if (should_change_image) {
+                // change image
+                image_url = this.image_queue.shift();
+                Logger.info(`Setting background image to ${image_url}`);
+                this.settings.last_image_url = image_url;
+                this.SaveSettings();
+            }
+            else {
+                // change opacity
+                image_url = this.settings.last_image_url;
+                Logger.info(`Setting background opacity to ${this.settings.alpha}`);
+            }
+            const transition_rule = this.settings.transition_type === '' ? '' : `transition: background-image ${this.settings.fading_seconds}s ${this.settings.transition_type};`;
+            this.global_css.textContent = `.theme-dark {
+        --dplus-background-color-alpha: ${this.settings.alpha} !important;
+      }
+
+      div#app-mount {
+        ${transition_rule}
+        background-image: url(${image_url}) !important;
+        background-blend-mode: darken;
+      }`;
+        }
         /**
          * Apply a random background image.
          */
-        ApplyRandomBackgroundImage() {
+        ApplyRandomBackgroundImage(apply_immediately = true) {
             if (this.image_urls.length <= 0)
                 return;
             while (this.image_queue.length < 2) {
-                this.image_queue.push(this.GetRandomImageURL());
+                const url = this.GetRandomImageURL();
+                this.image_queue.push(this.settings.use_image_proxy ? this.GetResizeImageURL(url) : url);
             }
-            this.ApplyBackgroundImage();
+            if (apply_immediately)
+                this.ApplyBackgroundImage();
             this.PreloadImage();
         }
         /**
@@ -205,8 +213,25 @@ module.exports = (Plugin, Library) => {
             }, {
                 placeholder: this.defaultSettings.interval
             });
+            const use_proxy_switch = new Settings.Switch('Enable image proxy server', 'Use a proxy server to resize and crop images to window size which prevents the resizing animation while fading in', this.settings.use_image_proxy, new_data => {
+                this.settings.use_image_proxy = new_data;
+                this.image_queue = [];
+                this.ApplyRandomBackgroundImage(false);
+            });
+            const background_transition_type = new Settings.Dropdown('Background switch method', 'Methods of switching background images', this.settings.transition_type, [
+                { value: '', label: 'Switch directly without animations' },
+                { value: 'ease', label: 'Starts and ends with a moderate speed, with a smoother middle' },
+                { value: 'ease-in-out', label: 'Gradual start, smooth middle, gradual end' },
+                { value: 'ease-in', label: 'Slow start, picks up speed' },
+                { value: 'ease-out', label: 'Consistent speed, slow finish' },
+                { value: 'linear', label: 'Constant speed throughout' },
+            ], new_data => {
+                this.settings.transition_type = new_data;
+            }, {
+                clearable: false
+            });
             const opacity_textbox = new Settings.Textbox('', '', this.settings.alpha, new_data => {
-                this.settings.alpha = +parseFloat(new_data) || this.defaultSettings.alpha;
+                this.settings.alpha = +parseFloat(new_data).toFixed(3) || this.defaultSettings.alpha;
                 this.ApplyBackgroundImage(false);
             }, {
                 placeholder: this.defaultSettings.alpha
@@ -244,7 +269,7 @@ module.exports = (Plugin, Library) => {
                 this.style.height = '0';
                 this.style.height = `${this.scrollHeight}px`;
             });
-            return Settings.SettingPanel.build(this.saveSettings.bind(this), interval_textbox, opacity_slider, opacity_textbox, fade_time_textbox, image_urls_textarea);
+            return Settings.SettingPanel.build(this.saveSettings.bind(this), interval_textbox, use_proxy_switch, background_transition_type, opacity_slider, opacity_textbox, fade_time_textbox, image_urls_textarea);
         }
     };
 };

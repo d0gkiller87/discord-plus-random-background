@@ -5,7 +5,7 @@
     "zerespluginlibrary": "^2.0.6"
   },
   "scripts": {
-    "build": "tsc && zpl build",
+    "build": "tsc && zpl build RandomBackground",
     "init": "zpl init"
   }
 }
